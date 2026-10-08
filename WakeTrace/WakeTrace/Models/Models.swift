@@ -8,11 +8,11 @@ enum SessionStatus: String {
 
     var label: String {
         switch self {
-        case .normal:          return "Normal"
-        case .interesting:     return "Interesting"
-        case .abnormal:        return "Abnormal"
-        case .severe:          return "Severe"
-        case .insufficientData: return "No Data"
+        case .normal:           return "Healthy"
+        case .interesting:      return "Worth a Look"
+        case .abnormal:         return "Some Issues"
+        case .severe:           return "Needs Attention"
+        case .insufficientData: return "Not Enough Data"
         }
     }
 
@@ -37,9 +37,9 @@ enum FindingSeverity: Int, Comparable {
     var label: String {
         switch self {
         case .normal:   return "Normal"
-        case .notice:   return "Notice"
-        case .elevated: return "Elevated"
-        case .critical: return "Critical"
+        case .notice:   return "Minor"
+        case .elevated: return "Moderate"
+        case .critical: return "Significant"
         }
     }
 

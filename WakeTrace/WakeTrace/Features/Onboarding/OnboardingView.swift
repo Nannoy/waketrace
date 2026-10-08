@@ -32,31 +32,37 @@ struct OnboardingView: View {
 
             // Icon + content
             let current = pages[page]
-            VStack(spacing: DS.lg) {
-                ZStack {
-                    Circle()
-                        .fill(current.accentColor.opacity(0.08))
-                        .frame(width: 80, height: 80)
-                    Image(systemName: current.icon)
-                        .font(.system(size: 32, weight: .light))
-                        .foregroundStyle(current.accentColor)
-                }
+            Group {
+                if page == pages.count - 1 {
+                    menuBarCalloutPage
+                } else {
+                    VStack(spacing: DS.lg) {
+                        ZStack {
+                            Circle()
+                                .fill(current.accentColor.opacity(0.08))
+                                .frame(width: 80, height: 80)
+                            Image(systemName: current.icon)
+                                .font(.system(size: 32, weight: .light))
+                                .foregroundStyle(current.accentColor)
+                        }
 
-                VStack(spacing: DS.sm) {
-                    Text(current.title)
-                        .font(.system(size: 22, weight: .semibold))
-                        .foregroundStyle(Color.wtLabel)
-                        .multilineTextAlignment(.center)
+                        VStack(spacing: DS.sm) {
+                            Text(current.title)
+                                .font(.system(size: 22, weight: .semibold))
+                                .foregroundStyle(Color.wtLabel)
+                                .multilineTextAlignment(.center)
 
-                    Text(current.body)
-                        .font(.system(size: 14))
-                        .foregroundStyle(Color.wtLabelSec)
-                        .multilineTextAlignment(.center)
-                        .lineSpacing(3)
-                        .frame(maxWidth: 360)
+                            Text(current.body)
+                                .font(.system(size: 14))
+                                .foregroundStyle(Color.wtLabelSec)
+                                .multilineTextAlignment(.center)
+                                .lineSpacing(3)
+                                .frame(maxWidth: 360)
+                        }
+                    }
+                    .padding(.horizontal, DS.xxl)
                 }
             }
-            .padding(.horizontal, DS.xxl)
             .animation(.spring(response: 0.4, dampingFraction: 0.85), value: page)
             .id(page)
 
@@ -89,6 +95,7 @@ struct OnboardingView: View {
                         .buttonStyle(WTPrimaryButtonStyle())
                 } else {
                     Button("Get Started") {
+                        UserDefaults.standard.set(true, forKey: "hasSeenOnboarding")
                         appState.isFirstLaunch = false
                         dismiss()
                     }
@@ -101,6 +108,89 @@ struct OnboardingView: View {
         }
         .background(Color.wtBackground)
         .frame(width: 540, height: 480)
+    }
+
+    // MARK: - Menu bar callout page
+
+    private var menuBarCalloutPage: some View {
+        VStack(spacing: DS.lg) {
+            Text("You're all set")
+                .font(.system(size: 22, weight: .semibold))
+                .foregroundStyle(Color.wtLabel)
+
+            Text("WakeTrace lives in your menu bar — not in the Dock.")
+                .font(.system(size: 14))
+                .foregroundStyle(Color.wtLabelSec)
+                .multilineTextAlignment(.center)
+                .frame(maxWidth: 340)
+
+            // Mini menu bar mockup
+            VStack(spacing: 8) {
+                MenuBarMockup()
+                    .frame(width: 340, height: 36)
+
+                HStack(spacing: 6) {
+                    Image(systemName: "arrow.up")
+                        .font(.system(size: 11, weight: .semibold))
+                        .foregroundStyle(Color.accentColor)
+                    Text("Click the waveform icon here to open WakeTrace")
+                        .font(.system(size: 12))
+                        .foregroundStyle(Color.wtLabelSec)
+                }
+            }
+
+            Text("Sleep your Mac tonight — your first report will be waiting in the morning.")
+                .font(.system(size: 13))
+                .foregroundStyle(Color.wtLabelTert)
+                .multilineTextAlignment(.center)
+                .frame(maxWidth: 320)
+        }
+        .padding(.horizontal, DS.xxl)
+    }
+}
+
+// Fake menu bar strip with a highlighted waveform icon
+private struct MenuBarMockup: View {
+    @State private var pulse = false
+
+    var body: some View {
+        RoundedRectangle(cornerRadius: 10, style: .continuous)
+            .fill(Color(nsColor: .windowBackgroundColor).opacity(0.9))
+            .overlay(
+                RoundedRectangle(cornerRadius: 10, style: .continuous)
+                    .stroke(Color.wtBorder, lineWidth: 0.5)
+            )
+            .shadow(color: .black.opacity(0.12), radius: 6, y: 3)
+            .overlay(alignment: .trailing) {
+                HStack(spacing: 14) {
+                    // Fake status items
+                    ForEach(["wifi", "battery.75percent", "speaker.wave.1"], id: \.self) { icon in
+                        Image(systemName: icon)
+                            .font(.system(size: 12))
+                            .foregroundStyle(Color.wtLabelTert)
+                    }
+
+                    // Highlighted waveform — this is WakeTrace
+                    ZStack {
+                        RoundedRectangle(cornerRadius: 5, style: .continuous)
+                            .fill(Color.accentColor.opacity(pulse ? 0.18 : 0.1))
+                            .frame(width: 28, height: 22)
+                            .animation(.easeInOut(duration: 1.1).repeatForever(autoreverses: true), value: pulse)
+
+                        Image(systemName: "waveform")
+                            .font(.system(size: 13, weight: .medium))
+                            .foregroundStyle(Color.accentColor)
+                    }
+                }
+                .padding(.trailing, 14)
+            }
+            .overlay(alignment: .center) {
+                // Fake clock
+                Text(Date(), format: .dateTime.hour().minute())
+                    .font(.system(size: 12, weight: .medium))
+                    .foregroundStyle(Color.wtLabel)
+            }
+            .onAppear { pulse = true }
     }
 }
 

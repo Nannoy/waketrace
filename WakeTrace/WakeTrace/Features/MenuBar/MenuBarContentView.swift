@@ -2,7 +2,8 @@ import SwiftUI
 
 struct MenuBarContentView: View {
     @EnvironmentObject private var appState: AppState
-    @Environment(\.openWindow) private var openWindow
+    @Environment(\.openWindow)   private var openWindow
+    @Environment(\.openSettings) private var openSettings
 
     var body: some View {
         VStack(spacing: 0) {
@@ -17,6 +18,10 @@ struct MenuBarContentView: View {
         .frame(width: 320)
         .background(Color.wtBackground)
         .onAppear { appState.refreshBattery() }
+        .onReceive(NotificationCenter.default.publisher(for: .openOnboardingIfNeeded)) { _ in
+            openWindow(id: "onboarding")
+            NSApp.activate(ignoringOtherApps: true)
+        }
     }
 
     // MARK: - Header
@@ -62,7 +67,7 @@ struct MenuBarContentView: View {
     private var analyzingState: some View {
         VStack(spacing: DS.sm) {
             ProgressView()
-            Text("Loading last sleep…")
+            Text("Checking last sleep…")
                 .font(.system(size: 13))
                 .foregroundStyle(Color.wtLabelSec)
         }
@@ -72,87 +77,119 @@ struct MenuBarContentView: View {
 
     private func lastSessionContent(_ session: SleepReport) -> some View {
         VStack(alignment: .leading, spacing: 0) {
-            Text("Last Sleep")
-                .sectionHeader()
-                .padding(.horizontal, DS.md)
-                .padding(.top, DS.md)
-                .padding(.bottom, 10)
+            // Section header — show relative label only when it adds info
+            HStack {
+                Text("Last Sleep")
+                    .sectionHeader()
+                Spacer()
+                if session.relativeLabel != "Last Sleep" {
+                    Text(session.relativeLabel)
+                        .font(.system(size: 10))
+                        .foregroundStyle(Color.wtLabelTert)
+                }
+            }
+            .padding(.horizontal, DS.md)
+            .padding(.top, DS.md)
+            .padding(.bottom, 10)
 
-            // Duration + status
-            HStack(alignment: .firstTextBaseline, spacing: DS.sm) {
-                Text(session.duration.formattedDuration)
-                    .font(.system(size: 28, weight: .light))
+            // Duration + status badge
+            HStack(alignment: .center, spacing: DS.sm) {
+                VStack(alignment: .leading, spacing: 2) {
+                    Group {
+                        if session.durationHours < 0.1 {
+                            Text("< 1 min")
+                                .foregroundStyle(Color.wtLabelTert)
+                        } else {
+                            Text(session.duration.formattedDuration)
+                                .foregroundStyle(Color.wtLabel)
+                        }
+                    }
+                    .font(.system(size: 30, weight: .light))
                     .monospacedDigit()
-                    .foregroundStyle(Color.wtLabel)
+
+                    // Sleep → wake times
+                    HStack(spacing: 6) {
+                        Text(session.sleepStart.shortTime)
+                        Image(systemName: "arrow.right")
+                            .font(.system(size: 8))
+                            .foregroundStyle(Color.wtLabelTert)
+                        Text(session.wakeEnd.shortTime)
+                    }
+                    .font(.system(size: 11))
+                    .foregroundStyle(Color.wtLabelSec)
+                }
+
                 Spacer()
                 StatusBadge(status: session.status)
             }
             .padding(.horizontal, DS.md)
 
-            Text(session.relativeLabel)
-                .font(.system(size: 12))
-                .foregroundStyle(Color.wtLabelSec)
-                .padding(.horizontal, DS.md)
-                .padding(.top, 2)
-
-            // Battery row
+            // Battery pill — only if meaningful drain
             if let before = session.batteryAtSleep, let after = session.batteryAtWake {
-                HStack(spacing: DS.xs) {
-                    Text("Battery")
-                        .font(.system(size: 12))
-                        .foregroundStyle(Color.wtLabelSec)
-                    Text("\(Int(before))%")
-                        .monoNum(12, weight: .medium)
-                        .foregroundStyle(Color.wtLabelSec)
-                    Image(systemName: "arrow.right")
-                        .font(.system(size: 9))
+                let drain = Int(before - after)
+                HStack(spacing: 6) {
+                    Image(systemName: "battery.50percent")
+                        .font(.system(size: 10))
                         .foregroundStyle(Color.wtLabelTert)
-                    Text("\(Int(after))%")
-                        .monoNum(12, weight: .medium)
-                        .foregroundStyle(Color.wtLabelSec)
-                    let delta = Int(before - after)
-                    Text("–\(delta)%")
-                        .monoNum(12, weight: .semibold)
-                        .foregroundStyle(session.status == .normal ? Color.wtLabelSec : session.status.color)
+                    if session.wasCharging {
+                        Text("Charged while sleeping")
+                            .font(.system(size: 11))
+                            .foregroundStyle(Color.wtLabelSec)
+                    } else if drain <= 0 {
+                        Text("\(Int(after))% — no drain")
+                            .font(.system(size: 11))
+                            .foregroundStyle(Color.wtLabelSec)
+                    } else {
+                        Text("\(Int(before))% → \(Int(after))%")
+                            .font(.system(size: 11))
+                            .foregroundStyle(Color.wtLabelSec)
+                        Text("(−\(drain)%)")
+                            .font(.system(size: 11, weight: .semibold))
+                            .monospacedDigit()
+                            .foregroundStyle(drain > 15 ? session.status.color : Color.wtLabelSec)
+                    }
                 }
                 .padding(.horizontal, DS.md)
-                .padding(.top, DS.sm)
-            } else if session.wasCharging {
-                Label("Plugged in during sleep", systemImage: "bolt.fill")
-                    .font(.system(size: 12))
-                    .foregroundStyle(Color.wtLabelTert)
-                    .padding(.horizontal, DS.md)
-                    .padding(.top, DS.sm)
+                .padding(.top, 8)
             }
 
-            // Top finding (non-normal only)
-            if let topFinding = session.findings.first(where: { $0.severity > .normal }) {
-                Text(topFinding.headline)
-                    .font(.system(size: 12))
-                    .foregroundStyle(Color.wtLabelSec)
-                    .lineLimit(2)
-                    .padding(.horizontal, DS.md)
-                    .padding(.top, DS.sm)
+            // Top finding — shown with severity colour dot
+            if let top = session.findings.first(where: { $0.severity > .normal }) {
+                HStack(alignment: .top, spacing: 6) {
+                    Circle()
+                        .fill(top.severity.color)
+                        .frame(width: 6, height: 6)
+                        .padding(.top, 3)
+                    Text(top.headline)
+                        .font(.system(size: 11))
+                        .foregroundStyle(Color.wtLabelSec)
+                        .lineLimit(2)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+                .padding(.horizontal, DS.md)
+                .padding(.top, 8)
             }
 
-            // View Report button
-            Button {
-                appState.selectedSession = session
-                openWindow(id: "report")
-            } label: {
-                Text("View Full Report")
-                    .font(.system(size: 12, weight: .medium))
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 7)
+            // View Full Report — subtle right-aligned link
+            HStack {
+                Spacer()
+                Button {
+                    appState.selectedSession = session
+                    openWindow(id: "report")
+                } label: {
+                    HStack(spacing: 4) {
+                        Text("View Full Report")
+                            .font(.system(size: 11, weight: .medium))
+                        Image(systemName: "arrow.right")
+                            .font(.system(size: 9, weight: .semibold))
+                    }
+                    .foregroundStyle(Color.accentColor)
+                }
+                .buttonStyle(.plain)
             }
-            .buttonStyle(.plain)
-            .background(
-                RoundedRectangle(cornerRadius: 7, style: .continuous)
-                    .fill(Color.accentColor.opacity(0.10))
-            )
-            .foregroundStyle(Color.accentColor)
             .padding(.horizontal, DS.md)
-            .padding(.vertical, DS.md)
+            .padding(.top, 10)
+            .padding(.bottom, DS.md)
         }
     }
 
@@ -161,10 +198,10 @@ struct MenuBarContentView: View {
             Image(systemName: "moon.zzz")
                 .font(.system(size: 22))
                 .foregroundStyle(Color.wtLabelTert)
-            Text("No sleep data yet")
+            Text("No sleep recorded yet")
                 .font(.system(size: 13, weight: .medium))
                 .foregroundStyle(Color.wtLabel)
-            Text("WakeTrace will analyse your Mac's next sleep session automatically.")
+            Text("Close your Mac's lid tonight and open WakeTrace tomorrow — your first report will be ready.")
                 .font(.system(size: 12))
                 .foregroundStyle(Color.wtLabelSec)
                 .multilineTextAlignment(.center)
@@ -202,7 +239,7 @@ struct MenuBarContentView: View {
 
             // Sleep assertions
             if appState.activeAssertions.isEmpty {
-                Text("No application is preventing sleep.")
+                Text("Nothing is blocking your Mac from sleeping.")
                     .font(.system(size: 11))
                     .foregroundStyle(Color.wtLabelTert)
             } else {
@@ -212,7 +249,7 @@ struct MenuBarContentView: View {
                     Image(systemName: "nosign")
                         .font(.system(size: 10))
                         .foregroundStyle(Color.statusNotice)
-                    Text("\(names)\(suffix) is preventing sleep.")
+                    Text("\(names)\(suffix) is keeping your Mac awake.")
                         .font(.system(size: 11))
                         .foregroundStyle(Color.statusNotice)
                         .lineLimit(2)
@@ -243,7 +280,7 @@ struct MenuBarContentView: View {
                 openWindow(id: "history")
             }
             menuButton("Settings", icon: "gearshape") {
-                NSApp.sendAction(Selector(("showSettingsWindow:")), to: nil, from: nil)
+                openSettings()
             }
             menuButton("Quit", icon: "power") {
                 NSApp.terminate(nil)
@@ -289,4 +326,36 @@ extension View {
     func hoverEffect() -> some View {
         modifier(HoverEffectModifier())
     }
+}
+
+// Shows your real last session (falls back to analyzing state if no sleep yet)
+#Preview("Live data") {
+    MenuBarContentView()
+        .environmentObject(AppState())
+        .frame(width: 320)
+}
+
+// Always shows a rich mock session — good for design work
+#Preview("Mock – Abnormal") {
+    MenuBarContentView()
+        .environmentObject(AppState.preview(
+            sessions: [MockData.abnormalSession],
+            battery: 61
+        ))
+        .frame(width: 320)
+}
+
+#Preview("Mock – Normal") {
+    MenuBarContentView()
+        .environmentObject(AppState.preview(
+            sessions: [MockData.normalSession],
+            battery: 87
+        ))
+        .frame(width: 320)
+}
+
+#Preview("Empty state") {
+    MenuBarContentView()
+        .environmentObject(AppState.preview(sessions: [], battery: 92))
+        .frame(width: 320)
 }

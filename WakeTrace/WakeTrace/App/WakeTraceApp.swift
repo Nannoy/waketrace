@@ -2,6 +2,7 @@ import SwiftUI
 
 @main
 struct WakeTraceApp: App {
+    @NSApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
     @StateObject private var appState = AppState()
 
     var body: some Scene {
@@ -21,8 +22,8 @@ struct WakeTraceApp: App {
             ReportWindowView()
                 .environmentObject(appState)
                 .frame(minWidth: 680, minHeight: 560)
+                .navigationTitle("Sleep Report")
         }
-        .windowStyle(.hiddenTitleBar)
         .defaultSize(width: 760, height: 680)
         .windowResizability(.contentSize)
 
@@ -31,8 +32,8 @@ struct WakeTraceApp: App {
             HistoryView()
                 .environmentObject(appState)
                 .frame(minWidth: 520, minHeight: 420)
+                .navigationTitle("History")
         }
-        .windowStyle(.hiddenTitleBar)
         .defaultSize(width: 600, height: 520)
         .windowResizability(.contentSize)
 

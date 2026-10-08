@@ -40,7 +40,7 @@ struct SettingsView: View {
     private var generalTab: some View {
         Form {
             Section("Startup") {
-                Toggle("Launch at login", isOn: $launchAtLogin)
+                Toggle("Open automatically when I log in", isOn: $launchAtLogin)
                     .onChange(of: launchAtLogin) { _, newValue in
                         do {
                             if newValue {
@@ -49,33 +49,63 @@ struct SettingsView: View {
                                 try SMAppService.mainApp.unregister()
                             }
                         } catch {
-                            launchAtLogin = !newValue  // revert on failure
+                            launchAtLogin = !newValue
                         }
                     }
-                Toggle("Show in Dock", isOn: $showInDock)
+                Toggle("Show icon in Dock", isOn: $showInDock)
             }
 
-            Section("Data Retention") {
-                Picker("Keep history for", selection: $retentionDays) {
-                    Text("7 days").tag(7)
-                    Text("14 days").tag(14)
-                    Text("30 days").tag(30)
-                    Text("90 days").tag(90)
-                    Text("Forever").tag(0)
+            Section("Sleep History") {
+                Picker("Save history for", selection: $retentionDays) {
+                    Text("1 week").tag(7)
+                    Text("2 weeks").tag(14)
+                    Text("1 month").tag(30)
+                    Text("3 months").tag(90)
+                    Text("Keep forever").tag(0)
                 }
                 .pickerStyle(.menu)
                 .frame(maxWidth: 200)
 
-                Text("Older sessions are automatically removed.")
+                Text("Sleep sessions older than this are deleted automatically.")
                     .font(.system(size: 11))
                     .foregroundStyle(Color.wtLabelTert)
             }
 
-            Section("Menu Bar") {
-                Text("WakeTrace lives exclusively in the menu bar. Click the waveform icon to view your last session at a glance.")
+            Section {
+                HStack(spacing: DS.md) {
+                    Image(systemName: "star.fill")
+                        .font(.system(size: 14))
+                        .foregroundStyle(Color(red: 0.98, green: 0.76, blue: 0.22))
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Enjoying WakeTrace?")
+                            .font(.system(size: 13, weight: .medium))
+                            .foregroundStyle(Color.wtLabel)
+                        Text("Star us on GitHub — it helps others discover the app.")
+                            .font(.system(size: 11))
+                            .foregroundStyle(Color.wtLabelSec)
+                    }
+                    Spacer()
+                    Button("Star on GitHub") {
+                        NSWorkspace.shared.open(URL(string: "https://github.com/Nannoy/waketrace")!)
+                    }
+                    .buttonStyle(.bordered)
+                    .font(.system(size: 12))
+                    .controlSize(.small)
+                }
+                .padding(.vertical, 2)
+            }
+
+            Section("Where to find WakeTrace") {
+                Text("WakeTrace lives in your menu bar — look for the waveform icon at the top of your screen. It never appears in the Dock.")
                     .font(.system(size: 11))
                     .foregroundStyle(Color.wtLabelTert)
                     .fixedSize(horizontal: false, vertical: true)
+                Button("Replay Introduction…") {
+                    UserDefaults.standard.removeObject(forKey: "hasSeenOnboarding")
+                    NotificationCenter.default.post(name: .openOnboardingIfNeeded, object: nil)
+                }
+                .buttonStyle(.link)
+                .font(.system(size: 12))
             }
         }
         .formStyle(.grouped)
@@ -86,13 +116,13 @@ struct SettingsView: View {
 
     private var notificationsTab: some View {
         Form {
-            Section("Alert me when…") {
-                Toggle("Severe battery drain detected", isOn: $notifyOnCritical)
-                Toggle("Elevated battery drain detected", isOn: $notifyOnElevated)
+            Section("Send me a notification when…") {
+                Toggle("Battery drained significantly overnight", isOn: $notifyOnCritical)
+                Toggle("Battery drain is higher than normal", isOn: $notifyOnElevated)
             }
 
             Section("About Notifications") {
-                Text("Notifications appear after your Mac wakes up. WakeTrace requires Notifications permission in System Settings.")
+                Text("Notifications appear shortly after your Mac wakes up. You can grant permission in System Settings → Notifications.")
                     .font(.system(size: 11))
                     .foregroundStyle(Color.wtLabelTert)
                     .fixedSize(horizontal: false, vertical: true)
@@ -119,7 +149,7 @@ struct SettingsView: View {
                     detail: "WakeTrace reads sleep/wake entries from the macOS unified log using `log show`. Only powerd entries are queried."
                 )
                 settingRow(
-                    icon: "battery.75percent",
+                    icon: "battery.50percent",
                     title: "Battery",
                     detail: "Battery level is read via IOKit. No data is written or transmitted."
                 )
@@ -131,7 +161,7 @@ struct SettingsView: View {
             }
 
             Section {
-                Button("Delete All Session Data") {
+                Button("Erase All Sleep History") {
                     appState.sessions = []
                 }
                 .foregroundStyle(Color.statusCritical)

@@ -2,6 +2,19 @@ import Foundation
 
 enum MockData {
 
+    // MARK: - Real data helpers (for previews)
+
+    /// First real session from disk; falls back to mock if none saved yet.
+    static var previewSession: SleepReport {
+        SessionStore.shared.load().first ?? abnormalSession
+    }
+
+    /// All real sessions from disk; falls back to mock history if none saved yet.
+    static var previewHistory: [SleepReport] {
+        let real = SessionStore.shared.load()
+        return real.isEmpty ? history : real
+    }
+
     // MARK: - Abnormal session (showcase session)
 
     static let abnormalSession: SleepReport = {

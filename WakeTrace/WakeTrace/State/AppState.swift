@@ -49,6 +49,17 @@ final class AppState: ObservableObject, SleepMonitorDelegate {
         }
     }
 
+    /// Preview/test init — skips disk load, retroactive analysis, and timers.
+    static func preview(sessions: [SleepReport] = [], battery: Double = 78, charging: Bool = false) -> AppState {
+        AppState(_preview: sessions, battery: battery, charging: charging)
+    }
+
+    private init(_preview sessions: [SleepReport], battery: Double, charging: Bool) {
+        self.sessions = sessions
+        self.currentBatteryLevel = battery
+        self.isCharging = charging
+    }
+
     func stop() {
         monitor.stop()
         batteryTimer?.invalidate()

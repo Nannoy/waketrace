@@ -2,30 +2,8 @@ import SwiftUI
 
 struct TimelineView: View {
     let session: SleepReport
-
-    // Group events into 30-minute buckets for visual density
-    private var buckets: [(hour: String, events: [WakeEventSummary])] {
-        guard !session.wakeEvents.isEmpty else { return [] }
-        var groups: [String: [WakeEventSummary]] = [:]
-        let fmt = DateFormatter()
-        fmt.dateFormat = "h:mm a"
-
-        let bucketSize: TimeInterval = 1800 // 30 min
-        for evt in session.wakeEvents {
-            let bucketStart = Date(timeIntervalSinceReferenceDate:
-                floor(evt.timestamp.timeIntervalSinceReferenceDate / bucketSize) * bucketSize)
-            let key = fmt.string(from: bucketStart)
-            groups[key, default: []].append(evt)
-        }
-
-        return groups
-            .map { (hour: $0.key, events: $0.value) }
-            .sorted { a, b in
-                guard let ta = a.events.first?.timestamp,
-                      let tb = b.events.first?.timestamp else { return false }
-                return ta < tb
-            }
-    }
+    @State private var trackProgress: Double = 0
+    @State private var revealCount: Int = 0
 
     var body: some View {
         VStack(alignment: .leading, spacing: DS.sm) {
@@ -38,166 +16,171 @@ struct TimelineView: View {
                     .foregroundStyle(Color.wtLabelTert)
             }
 
-            WTCard(padding: 0) {
+            WTCard(padding: DS.lg) {
                 if session.wakeEvents.isEmpty {
-                    Text("No wake events recorded.")
-                        .font(.system(size: 13))
-                        .foregroundStyle(Color.wtLabelTert)
-                        .padding(DS.lg)
+                    emptyState
                 } else {
-                    VStack(spacing: 0) {
-                        // Sparkline overview
-                        sparkline
-                            .padding(.horizontal, DS.lg)
-                            .padding(.top, DS.md)
-                            .padding(.bottom, DS.sm)
-
-                        WTDivider()
-
-                        // Category legend
+                    VStack(alignment: .leading, spacing: DS.md) {
+                        timeLabels
+                        timelineLane
                         categoryLegend
-
-                        WTDivider()
-
-                        // Grouped event list
-                        ScrollView {
-                            LazyVStack(spacing: 0, pinnedViews: []) {
-                                ForEach(buckets.prefix(20), id: \.hour) { bucket in
-                                    timelineBucket(bucket)
-                                }
-                                if buckets.count > 20 {
-                                    Text("+ \(buckets.count - 20) more buckets not shown")
-                                        .font(.system(size: 11))
-                                        .foregroundStyle(Color.wtLabelTert)
-                                        .padding(DS.md)
-                                }
-                            }
-                        }
-                        .frame(maxHeight: 260)
+                    }
+                }
+            }
+        }
+        .onAppear {
+            withAnimation(.easeOut(duration: 0.7)) {
+                trackProgress = 1.0
+            }
+            for i in 0..<session.wakeEvents.count {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.25 + Double(i) * 0.035) {
+                    withAnimation(.spring(response: 0.3, dampingFraction: 0.65)) {
+                        revealCount = i + 1
                     }
                 }
             }
         }
     }
 
-    // MARK: - Sparkline
+    // MARK: - Time labels
 
-    private var sparkline: some View {
+    private var timeLabels: some View {
+        HStack {
+            Text(session.sleepStart.shortTimeNoAmPm)
+                .font(.system(size: 10, design: .monospaced))
+                .foregroundStyle(Color.wtLabelTert)
+            Spacer()
+            Text(session.wakeEnd.shortTimeNoAmPm)
+                .font(.system(size: 10, design: .monospaced))
+                .foregroundStyle(Color.wtLabelTert)
+        }
+    }
+
+    // MARK: - Lane
+
+    private var timelineLane: some View {
         GeometryReader { geo in
+            let w = geo.size.width
             let total = session.duration
-            let width = geo.size.width
 
             ZStack(alignment: .leading) {
-                // Track
-                RoundedRectangle(cornerRadius: 3)
-                    .fill(Color.wtBorder.opacity(0.3))
-                    .frame(height: 4)
+                // Track background
+                Capsule()
+                    .fill(Color.wtBorder.opacity(0.12))
+                    .frame(height: 2)
 
-                // Sleep / wake markers
-                ForEach(session.wakeEvents) { event in
-                    let offset = total > 0
-                        ? CGFloat(event.timestamp.timeIntervalSince(session.sleepStart) / total) * width
+                // Animated fill
+                Capsule()
+                    .fill(Color.wtBorder.opacity(0.35))
+                    .frame(width: w * trackProgress, height: 2)
+
+                // Event dots
+                ForEach(Array(session.wakeEvents.enumerated()), id: \.element.id) { idx, event in
+                    let frac = total > 0
+                        ? event.timestamp.timeIntervalSince(session.sleepStart) / total
                         : 0
-                    Circle()
-                        .fill(event.category.sparkColor)
-                        .frame(width: event.isDarkWake ? 5 : 8, height: event.isDarkWake ? 5 : 8)
-                        .offset(x: max(0, offset - 3))
+                    let cx = CGFloat(frac) * w
+                    let size: CGFloat = event.isDarkWake ? 6 : 10
+                    let shown = idx < revealCount
+
+                    ZStack {
+                        if !event.isDarkWake {
+                            Circle()
+                                .fill(event.category.sparkColor.opacity(0.20))
+                                .frame(width: size + 7, height: size + 7)
+                        }
+                        Circle()
+                            .fill(event.category.sparkColor)
+                            .frame(width: size, height: size)
+                        if !event.isDarkWake {
+                            Circle()
+                                .strokeBorder(event.category.sparkColor.opacity(0.45), lineWidth: 1)
+                                .frame(width: size + 3, height: size + 3)
+                        }
+                    }
+                    .offset(x: max(0, min(w - size, cx - size / 2)))
+                    .scaleEffect(shown ? 1 : 0.01)
+                    .opacity(shown ? 1 : 0)
                 }
             }
-            .frame(height: 8)
+            .frame(height: 18)
         }
-        .frame(height: 8)
+        .frame(height: 18)
     }
 
     // MARK: - Legend
 
     private var categoryLegend: some View {
         let breakdown = session.wakeCategoryBreakdown
-
         return ScrollView(.horizontal, showsIndicators: false) {
-            HStack(spacing: DS.lg) {
+            HStack(spacing: DS.md) {
+                HStack(spacing: 5) {
+                    Circle()
+                        .fill(Color.wtLabelTert.opacity(0.5))
+                        .frame(width: 5, height: 5)
+                    Text("Dark wake")
+                        .font(.system(size: 10))
+                        .foregroundStyle(Color.wtLabelTert)
+                }
                 ForEach(breakdown, id: \.category) { item in
-                    HStack(spacing: DS.xs) {
+                    HStack(spacing: 5) {
                         Circle()
                             .fill(item.category.sparkColor)
-                            .frame(width: 6, height: 6)
+                            .frame(width: 7, height: 7)
                         Text("\(item.count) \(item.category.displayName)")
                             .font(.system(size: 11))
                             .foregroundStyle(Color.wtLabelSec)
                     }
                 }
             }
-            .padding(.horizontal, DS.lg)
-            .padding(.vertical, DS.sm)
         }
     }
 
-    // MARK: - Bucket row
+    // MARK: - Empty state
 
-    private func timelineBucket(_ bucket: (hour: String, events: [WakeEventSummary])) -> some View {
-        HStack(alignment: .top, spacing: DS.md) {
-            Text(bucket.hour)
-                .font(.system(size: 10, design: .monospaced))
-                .foregroundStyle(Color.wtLabelTert)
-                .frame(width: 56, alignment: .trailing)
-                .padding(.top, 3)
-
-            // Timeline dot + line
-            VStack(spacing: 0) {
-                Circle()
-                    .fill(bucket.events.first.map { $0.category.sparkColor } ?? Color.wtBorder)
-                    .frame(width: 7, height: 7)
-                    .padding(.top, 4)
-                Rectangle()
-                    .fill(Color.wtBorder.opacity(0.3))
-                    .frame(width: 1)
-            }
-
-            // Event chips
-            VStack(alignment: .leading, spacing: 3) {
-                ForEach(bucket.events) { event in
-                    eventChip(event)
-                }
-            }
-            .padding(.bottom, DS.sm)
-
-            Spacer()
-        }
-        .padding(.horizontal, DS.md)
-        .padding(.top, DS.sm)
-    }
-
-    private func eventChip(_ event: WakeEventSummary) -> some View {
-        HStack(spacing: 4) {
-            Image(systemName: event.category.systemImage)
-                .font(.system(size: 9))
-                .foregroundStyle(event.category.sparkColor)
-            Text(event.category.displayName)
-                .font(.system(size: 11))
-                .foregroundStyle(Color.wtLabelSec)
-            if !event.isDarkWake {
-                Text("Full Wake")
-                    .font(.system(size: 10))
-                    .foregroundStyle(Color.wtLabelTert)
+    private var emptyState: some View {
+        HStack(spacing: DS.md) {
+            Image(systemName: "checkmark.circle.fill")
+                .font(.system(size: 18))
+                .foregroundStyle(Color(red: 0.18, green: 0.84, blue: 0.58))
+            VStack(alignment: .leading, spacing: 2) {
+                Text("No wake events recorded")
+                    .font(.system(size: 13, weight: .medium))
+                    .foregroundStyle(Color.wtLabel)
+                Text("Your Mac slept without interruption.")
+                    .font(.system(size: 11))
+                    .foregroundStyle(Color.wtLabelSec)
             }
         }
     }
 }
 
-// MARK: - WakeCategory helpers for timeline
+// MARK: - WakeCategory sparkColor
 
 extension WakeCategory {
     var sparkColor: Color {
         switch self {
-        case .bluetooth:   return Color(red: 0.30, green: 0.53, blue: 0.90)
-        case .network:     return Color(red: 0.30, green: 0.76, blue: 0.60)
-        case .maintenance: return Color.wtLabelTert
-        case .timer:       return Color(red: 0.70, green: 0.55, blue: 0.88)
-        case .lid:         return Color.statusNormal
-        case .user:        return Color.statusNormal
-        case .power:       return Color(red: 0.98, green: 0.72, blue: 0.30)
-        case .application: return Color.statusElevated
-        case .unknown:     return Color.wtLabelTert
+        case .bluetooth:   return Color(red: 0.30, green: 0.53, blue: 0.92)
+        case .network:     return Color(red: 0.18, green: 0.84, blue: 0.58)
+        case .maintenance: return Color(red: 0.58, green: 0.58, blue: 0.68)
+        case .timer:       return Color(red: 0.70, green: 0.52, blue: 0.92)
+        case .lid:         return Color(red: 0.30, green: 0.82, blue: 0.78)
+        case .user:        return Color(red: 0.30, green: 0.82, blue: 0.78)
+        case .power:       return Color(red: 0.98, green: 0.76, blue: 0.22)
+        case .application: return Color(red: 0.98, green: 0.50, blue: 0.30)
+        case .unknown:     return Color(red: 0.55, green: 0.55, blue: 0.62)
         }
     }
+}
+
+#Preview("Active timeline") {
+    TimelineView(session: MockData.previewSession)
+        .frame(width: 680)
+        .padding()
+}
+
+#Preview("Empty timeline") {
+    TimelineView(session: MockData.previewHistory.dropFirst().first ?? MockData.previewSession)
+        .frame(width: 680)
+        .padding()
 }

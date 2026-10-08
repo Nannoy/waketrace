@@ -15,10 +15,10 @@ struct FindingsSection: View {
                             .font(.system(size: 20))
                             .foregroundStyle(Color.statusNormal)
                         VStack(alignment: .leading, spacing: 2) {
-                            Text("Nothing to report")
+                            Text("Everything looks good")
                                 .font(.system(size: 13, weight: .medium))
                                 .foregroundStyle(Color.wtLabel)
-                            Text("Your Mac slept well last night.")
+                            Text("No issues found during this sleep session.")
                                 .font(.system(size: 12))
                                 .foregroundStyle(Color.wtLabelSec)
                         }
@@ -94,19 +94,28 @@ struct FindingRow: View {
 
                         if let rec = finding.recommendation {
                             HStack(alignment: .top, spacing: DS.sm) {
-                                Image(systemName: "lightbulb")
+                                Image(systemName: "lightbulb.fill")
                                     .font(.system(size: 11))
-                                    .foregroundStyle(Color.accentColor)
+                                    .foregroundStyle(Color(red: 0.98, green: 0.76, blue: 0.22))
                                     .padding(.top, 1)
-                                Text(rec)
-                                    .font(.system(size: 12))
-                                    .foregroundStyle(Color.wtLabelSec)
-                                    .fixedSize(horizontal: false, vertical: true)
+                                VStack(alignment: .leading, spacing: 2) {
+                                    Text("What you can do")
+                                        .font(.system(size: 10, weight: .semibold))
+                                        .foregroundStyle(Color(red: 0.98, green: 0.76, blue: 0.22).opacity(0.8))
+                                    Text(rec)
+                                        .font(.system(size: 12))
+                                        .foregroundStyle(Color.wtLabelSec)
+                                        .fixedSize(horizontal: false, vertical: true)
+                                }
                             }
                             .padding(DS.sm)
                             .background(
                                 RoundedRectangle(cornerRadius: 7)
-                                    .fill(Color.accentColor.opacity(0.06))
+                                    .fill(Color(red: 0.98, green: 0.76, blue: 0.22).opacity(0.05))
+                                    .overlay(
+                                        RoundedRectangle(cornerRadius: 7)
+                                            .strokeBorder(Color(red: 0.98, green: 0.76, blue: 0.22).opacity(0.15), lineWidth: 0.5)
+                                    )
                             )
                         }
 
@@ -144,4 +153,16 @@ struct FindingRow: View {
         case .normalSession:      return "checkmark.circle"
         }
     }
+}
+
+#Preview("With findings") {
+    FindingsSection(findings: MockData.previewSession.findings)
+        .frame(width: 600)
+        .padding()
+}
+
+#Preview("Empty") {
+    FindingsSection(findings: [])
+        .frame(width: 600)
+        .padding()
 }
