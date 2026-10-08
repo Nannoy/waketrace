@@ -20,9 +20,12 @@ targets:
         LSMinimumSystemVersion: "14.0"
         LSUIElement: true
         NSHumanReadableDescription: "Know what your Mac does while it sleeps."
+        NSUserNotificationsUsageDescription: "WakeTrace sends a notification after waking if unusual sleep activity is detected."
         CFBundleIconFile: AppIcon
     entitlements:
       path: WakeTrace/WakeTrace.entitlements
+    dependencies:
+      - sdk: IOKit.framework
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.wakatrace.WakeTrace

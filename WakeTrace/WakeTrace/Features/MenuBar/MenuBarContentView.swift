@@ -16,6 +16,7 @@ struct MenuBarContentView: View {
         }
         .frame(width: 320)
         .background(Color.wtBackground)
+        .onAppear { appState.refreshBattery() }
     }
 
     // MARK: - Header

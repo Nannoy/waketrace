@@ -28,5 +28,7 @@
 	<true/>
 	<key>NSHumanReadableDescription</key>
 	<string>Know what your Mac does while it sleeps.</string>
+	<key>NSUserNotificationsUsageDescription</key>
+	<string>WakeTrace sends a notification after waking if unusual sleep activity is detected.</string>
 </dict>
 </plist>

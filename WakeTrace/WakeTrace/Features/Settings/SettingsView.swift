@@ -1,8 +1,9 @@
 import SwiftUI
+import ServiceManagement
 
 struct SettingsView: View {
     @EnvironmentObject private var appState: AppState
-    @AppStorage("launchAtLogin")     private var launchAtLogin    = false
+    @State private var launchAtLogin: Bool = (SMAppService.mainApp.status == .enabled)
     @AppStorage("showInDock")        private var showInDock       = false
     @AppStorage("notifyOnCritical")  private var notifyOnCritical = true
     @AppStorage("notifyOnElevated")  private var notifyOnElevated = false
@@ -40,6 +41,17 @@ struct SettingsView: View {
         Form {
             Section("Startup") {
                 Toggle("Launch at login", isOn: $launchAtLogin)
+                    .onChange(of: launchAtLogin) { _, newValue in
+                        do {
+                            if newValue {
+                                try SMAppService.mainApp.register()
+                            } else {
+                                try SMAppService.mainApp.unregister()
+                            }
+                        } catch {
+                            launchAtLogin = !newValue  // revert on failure
+                        }
+                    }
                 Toggle("Show in Dock", isOn: $showInDock)
             }
 
