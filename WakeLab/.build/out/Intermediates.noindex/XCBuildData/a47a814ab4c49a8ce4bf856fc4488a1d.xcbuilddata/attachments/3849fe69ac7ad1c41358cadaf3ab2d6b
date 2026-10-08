@@ -1,0 +1,69 @@
+{
+  "" : {
+    "diagnostics" : "/Users/nathaniel/Desktop/wakatrace/WakeLab/.build/out/Intermediates.noindex/WakeLab.build/Debug/WakeLab-p.build/Objects-normal/arm64/WakeLab-primary.dia",
+    "emit-module-dependencies" : "/Users/nathaniel/Desktop/wakatrace/WakeLab/.build/out/Intermediates.noindex/WakeLab.build/Debug/WakeLab-p.build/Objects-normal/arm64/WakeLab-primary-emit-module.d",
+    "emit-module-diagnostics" : "/Users/nathaniel/Desktop/wakatrace/WakeLab/.build/out/Intermediates.noindex/WakeLab.build/Debug/WakeLab-p.build/Objects-normal/arm64/WakeLab-primary-emit-module.dia",
+    "pch" : "/Users/nathaniel/Desktop/wakatrace/WakeLab/.build/out/Intermediates.noindex/WakeLab.build/Debug/WakeLab-p.build/Objects-normal/arm64/WakeLab-primary-Bridging-header.pch",
+    "swift-dependencies" : "/Users/nathaniel/Desktop/wakatrace/WakeLab/.build/out/Intermediates.noindex/WakeLab.build/Debug/WakeLab-p.build/Objects-normal/arm64/WakeLab-primary.swiftdeps"
+  },
+  "/Users/nathaniel/Desktop/wakatrace/WakeLab/Sources/WakeLab/Analyzer/SessionAnalyzer.swift" : {
+    "const-values" : "/Users/nathaniel/Desktop/wakatrace/WakeLab/.build/out/Intermediates.noindex/WakeLab.build/Debug/WakeLab-p.build/Objects-normal/arm64/SessionAnalyzer.swiftconstvalues",
+    "dependencies" : "/Users/nathaniel/Desktop/wakatrace/WakeLab/.build/out/Intermediates.noindex/WakeLab.build/Debug/WakeLab-p.build/Objects-normal/arm64/SessionAnalyzer.d",
+    "diagnostics" : "/Users/nathaniel/Desktop/wakatrace/WakeLab/.build/out/Intermediates.noindex/WakeLab.build/Debug/WakeLab-p.build/Objects-normal/arm64/SessionAnalyzer.dia",
+    "index-unit-output-path" : "/WakeLab.build/Debug/WakeLab-p.build/Objects-normal/arm64/SessionAnalyzer.o",
+    "llvm-bc" : "/Users/nathaniel/Desktop/wakatrace/WakeLab/.build/out/Intermediates.noindex/WakeLab.build/Debug/WakeLab-p.build/Objects-normal/arm64/SessionAnalyzer.bc",
+    "object" : "/Users/nathaniel/Desktop/wakatrace/WakeLab/.build/out/Intermediates.noindex/WakeLab.build/Debug/WakeLab-p.build/Objects-normal/arm64/SessionAnalyzer.o",
+    "swift-dependencies" : "/Users/nathaniel/Desktop/wakatrace/WakeLab/.build/out/Intermediates.noindex/WakeLab.build/Debug/WakeLab-p.build/Objects-normal/arm64/SessionAnalyzer.swiftdeps",
+    "swiftmodule" : "/Users/nathaniel/Desktop/wakatrace/WakeLab/.build/out/Intermediates.noindex/WakeLab.build/Debug/WakeLab-p.build/Objects-normal/arm64/SessionAnalyzer~partial.swiftmodule"
+  },
+  "/Users/nathaniel/Desktop/wakatrace/WakeLab/Sources/WakeLab/Classifier/WakeClassifier.swift" : {
+    "const-values" : "/Users/nathaniel/Desktop/wakatrace/WakeLab/.build/out/Intermediates.noindex/WakeLab.build/Debug/WakeLab-p.build/Objects-normal/arm64/WakeClassifier.swiftconstvalues",
+    "dependencies" : "/Users/nathaniel/Desktop/wakatrace/WakeLab/.build/out/Intermediates.noindex/WakeLab.build/Debug/WakeLab-p.build/Objects-normal/arm64/WakeClassifier.d",
+    "diagnostics" : "/Users/nathaniel/Desktop/wakatrace/WakeLab/.build/out/Intermediates.noindex/WakeLab.build/Debug/WakeLab-p.build/Objects-normal/arm64/WakeClassifier.dia",
+    "index-unit-output-path" : "/WakeLab.build/Debug/WakeLab-p.build/Objects-normal/arm64/WakeClassifier.o",
+    "llvm-bc" : "/Users/nathaniel/Desktop/wakatrace/WakeLab/.build/out/Intermediates.noindex/WakeLab.build/Debug/WakeLab-p.build/Objects-normal/arm64/WakeClassifier.bc",
+    "object" : "/Users/nathaniel/Desktop/wakatrace/WakeLab/.build/out/Intermediates.noindex/WakeLab.build/Debug/WakeLab-p.build/Objects-normal/arm64/WakeClassifier.o",
+    "swift-dependencies" : "/Users/nathaniel/Desktop/wakatrace/WakeLab/.build/out/Intermediates.noindex/WakeLab.build/Debug/WakeLab-p.build/Objects-normal/arm64/WakeClassifier.swiftdeps",
+    "swiftmodule" : "/Users/nathaniel/Desktop/wakatrace/WakeLab/.build/out/Intermediates.noindex/WakeLab.build/Debug/WakeLab-p.build/Objects-normal/arm64/WakeClassifier~partial.swiftmodule"
+  },
+  "/Users/nathaniel/Desktop/wakatrace/WakeLab/Sources/WakeLab/Collectors/BatteryReader.swift" : {
+    "const-values" : "/Users/nathaniel/Desktop/wakatrace/WakeLab/.build/out/Intermediates.noindex/WakeLab.build/Debug/WakeLab-p.build/Objects-normal/arm64/BatteryReader.swiftconstvalues",
+    "dependencies" : "/Users/nathaniel/Desktop/wakatrace/WakeLab/.build/out/Intermediates.noindex/WakeLab.build/Debug/WakeLab-p.build/Objects-normal/arm64/BatteryReader.d",
+    "diagnostics" : "/Users/nathaniel/Desktop/wakatrace/WakeLab/.build/out/Intermediates.noindex/WakeLab.build/Debug/WakeLab-p.build/Objects-normal/arm64/BatteryReader.dia",
+    "index-unit-output-path" : "/WakeLab.build/Debug/WakeLab-p.build/Objects-normal/arm64/BatteryReader.o",
+    "llvm-bc" : "/Users/nathaniel/Desktop/wakatrace/WakeLab/.build/out/Intermediates.noindex/WakeLab.build/Debug/WakeLab-p.build/Objects-normal/arm64/BatteryReader.bc",
+    "object" : "/Users/nathaniel/Desktop/wakatrace/WakeLab/.build/out/Intermediates.noindex/WakeLab.build/Debug/WakeLab-p.build/Objects-normal/arm64/BatteryReader.o",
+    "swift-dependencies" : "/Users/nathaniel/Desktop/wakatrace/WakeLab/.build/out/Intermediates.noindex/WakeLab.build/Debug/WakeLab-p.build/Objects-normal/arm64/BatteryReader.swiftdeps",
+    "swiftmodule" : "/Users/nathaniel/Desktop/wakatrace/WakeLab/.build/out/Intermediates.noindex/WakeLab.build/Debug/WakeLab-p.build/Objects-normal/arm64/BatteryReader~partial.swiftmodule"
+  },
+  "/Users/nathaniel/Desktop/wakatrace/WakeLab/Sources/WakeLab/Collectors/LogReader.swift" : {
+    "const-values" : "/Users/nathaniel/Desktop/wakatrace/WakeLab/.build/out/Intermediates.noindex/WakeLab.build/Debug/WakeLab-p.build/Objects-normal/arm64/LogReader.swiftconstvalues",
+    "dependencies" : "/Users/nathaniel/Desktop/wakatrace/WakeLab/.build/out/Intermediates.noindex/WakeLab.build/Debug/WakeLab-p.build/Objects-normal/arm64/LogReader.d",
+    "diagnostics" : "/Users/nathaniel/Desktop/wakatrace/WakeLab/.build/out/Intermediates.noindex/WakeLab.build/Debug/WakeLab-p.build/Objects-normal/arm64/LogReader.dia",
+    "index-unit-output-path" : "/WakeLab.build/Debug/WakeLab-p.build/Objects-normal/arm64/LogReader.o",
+    "llvm-bc" : "/Users/nathaniel/Desktop/wakatrace/WakeLab/.build/out/Intermediates.noindex/WakeLab.build/Debug/WakeLab-p.build/Objects-normal/arm64/LogReader.bc",
+    "object" : "/Users/nathaniel/Desktop/wakatrace/WakeLab/.build/out/Intermediates.noindex/WakeLab.build/Debug/WakeLab-p.build/Objects-normal/arm64/LogReader.o",
+    "swift-dependencies" : "/Users/nathaniel/Desktop/wakatrace/WakeLab/.build/out/Intermediates.noindex/WakeLab.build/Debug/WakeLab-p.build/Objects-normal/arm64/LogReader.swiftdeps",
+    "swiftmodule" : "/Users/nathaniel/Desktop/wakatrace/WakeLab/.build/out/Intermediates.noindex/WakeLab.build/Debug/WakeLab-p.build/Objects-normal/arm64/LogReader~partial.swiftmodule"
+  },
+  "/Users/nathaniel/Desktop/wakatrace/WakeLab/Sources/WakeLab/Models/Models.swift" : {
+    "const-values" : "/Users/nathaniel/Desktop/wakatrace/WakeLab/.build/out/Intermediates.noindex/WakeLab.build/Debug/WakeLab-p.build/Objects-normal/arm64/Models.swiftconstvalues",
+    "dependencies" : "/Users/nathaniel/Desktop/wakatrace/WakeLab/.build/out/Intermediates.noindex/WakeLab.build/Debug/WakeLab-p.build/Objects-normal/arm64/Models.d",
+    "diagnostics" : "/Users/nathaniel/Desktop/wakatrace/WakeLab/.build/out/Intermediates.noindex/WakeLab.build/Debug/WakeLab-p.build/Objects-normal/arm64/Models.dia",
+    "index-unit-output-path" : "/WakeLab.build/Debug/WakeLab-p.build/Objects-normal/arm64/Models.o",
+    "llvm-bc" : "/Users/nathaniel/Desktop/wakatrace/WakeLab/.build/out/Intermediates.noindex/WakeLab.build/Debug/WakeLab-p.build/Objects-normal/arm64/Models.bc",
+    "object" : "/Users/nathaniel/Desktop/wakatrace/WakeLab/.build/out/Intermediates.noindex/WakeLab.build/Debug/WakeLab-p.build/Objects-normal/arm64/Models.o",
+    "swift-dependencies" : "/Users/nathaniel/Desktop/wakatrace/WakeLab/.build/out/Intermediates.noindex/WakeLab.build/Debug/WakeLab-p.build/Objects-normal/arm64/Models.swiftdeps",
+    "swiftmodule" : "/Users/nathaniel/Desktop/wakatrace/WakeLab/.build/out/Intermediates.noindex/WakeLab.build/Debug/WakeLab-p.build/Objects-normal/arm64/Models~partial.swiftmodule"
+  },
+  "/Users/nathaniel/Desktop/wakatrace/WakeLab/Sources/WakeLab/main.swift" : {
+    "const-values" : "/Users/nathaniel/Desktop/wakatrace/WakeLab/.build/out/Intermediates.noindex/WakeLab.build/Debug/WakeLab-p.build/Objects-normal/arm64/main.swiftconstvalues",
+    "dependencies" : "/Users/nathaniel/Desktop/wakatrace/WakeLab/.build/out/Intermediates.noindex/WakeLab.build/Debug/WakeLab-p.build/Objects-normal/arm64/main.d",
+    "diagnostics" : "/Users/nathaniel/Desktop/wakatrace/WakeLab/.build/out/Intermediates.noindex/WakeLab.build/Debug/WakeLab-p.build/Objects-normal/arm64/main.dia",
+    "index-unit-output-path" : "/WakeLab.build/Debug/WakeLab-p.build/Objects-normal/arm64/main.o",
+    "llvm-bc" : "/Users/nathaniel/Desktop/wakatrace/WakeLab/.build/out/Intermediates.noindex/WakeLab.build/Debug/WakeLab-p.build/Objects-normal/arm64/main.bc",
+    "object" : "/Users/nathaniel/Desktop/wakatrace/WakeLab/.build/out/Intermediates.noindex/WakeLab.build/Debug/WakeLab-p.build/Objects-normal/arm64/main.o",
+    "swift-dependencies" : "/Users/nathaniel/Desktop/wakatrace/WakeLab/.build/out/Intermediates.noindex/WakeLab.build/Debug/WakeLab-p.build/Objects-normal/arm64/main.swiftdeps",
+    "swiftmodule" : "/Users/nathaniel/Desktop/wakatrace/WakeLab/.build/out/Intermediates.noindex/WakeLab.build/Debug/WakeLab-p.build/Objects-normal/arm64/main~partial.swiftmodule"
+  }
+}
