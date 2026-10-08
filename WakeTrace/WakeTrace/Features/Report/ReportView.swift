@@ -33,7 +33,7 @@ struct ReportView: View {
             VStack(alignment: .leading, spacing: DS.xs) {
                 HStack(spacing: DS.sm) {
                     StatusBadge(status: session.status)
-                    Text(session.nightLabel)
+                    Text(session.relativeLabel)
                         .font(.system(size: 12))
                         .foregroundStyle(Color.wtLabelSec)
                 }

@@ -170,22 +170,34 @@ struct SleepReport: Identifiable {
         }
     }
 
-    var nightLabel: String {
+    // Relative label for the session — "Last Sleep", "Yesterday", "Mon, Oct 6", etc.
+    var relativeLabel: String {
         let cal = Calendar.current
-        if cal.isDateInToday(wakeEnd)      { return "Last Night" }
-        if cal.isDateInYesterday(wakeEnd)  { return "2 Nights Ago" }
-        let fmt = DateFormatter()
-        fmt.dateFormat = "EEEE"
-        return fmt.string(from: sleepStart) + " Night"
+        let now = Date()
+        let days = cal.dateComponents([.day], from: cal.startOfDay(for: wakeEnd), to: cal.startOfDay(for: now)).day ?? 0
+        switch days {
+        case 0:  return "Last Sleep"
+        case 1:  return "Yesterday"
+        case 2:  return "2 days ago"
+        default:
+            let fmt = DateFormatter()
+            fmt.dateFormat = "EEE, MMM d"
+            return fmt.string(from: sleepStart)
+        }
     }
 
     var shortDateLabel: String {
         let cal = Calendar.current
-        if cal.isDateInToday(wakeEnd)     { return "Today" }
-        if cal.isDateInYesterday(wakeEnd) { return "Yesterday" }
-        let fmt = DateFormatter()
-        fmt.dateFormat = "EEE, MMM d"
-        return fmt.string(from: wakeEnd)
+        let now = Date()
+        let days = cal.dateComponents([.day], from: cal.startOfDay(for: wakeEnd), to: cal.startOfDay(for: now)).day ?? 0
+        switch days {
+        case 0:  return "Today"
+        case 1:  return "Yesterday"
+        default:
+            let fmt = DateFormatter()
+            fmt.dateFormat = "EEE, MMM d"
+            return fmt.string(from: wakeEnd)
+        }
     }
 
     var drainMultiplier: Double? {

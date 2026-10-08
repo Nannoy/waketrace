@@ -43,7 +43,7 @@ final class NotificationManager: NSObject, UNUserNotificationCenterDelegate {
         guard let finding = topFinding, finding.severity >= .notice else { return }
 
         let content = UNMutableNotificationContent()
-        content.title = "WakeTrace — \(report.nightLabel)"
+        content.title = "WakeTrace — \(report.relativeLabel)"
         content.body = finding.headline
         content.sound = .default
         content.categoryIdentifier = Self.categoryID

@@ -30,6 +30,16 @@ struct MenuBarContentView: View {
                 .font(.system(size: 13, weight: .semibold))
                 .foregroundStyle(Color.wtLabel)
             Spacer()
+            if appState.isAnalyzing {
+                HStack(spacing: 4) {
+                    ProgressView()
+                        .scaleEffect(0.6)
+                        .frame(width: 12, height: 12)
+                    Text("Analysing…")
+                        .font(.system(size: 11))
+                        .foregroundStyle(Color.wtLabelTert)
+                }
+            }
         }
         .padding(.horizontal, DS.md)
         .padding(.vertical, 12)
@@ -39,12 +49,25 @@ struct MenuBarContentView: View {
 
     private var lastSessionSection: some View {
         Group {
-            if let session = appState.lastSession {
+            if appState.isAnalyzing && appState.sessions.isEmpty {
+                analyzingState
+            } else if let session = appState.lastSession {
                 lastSessionContent(session)
             } else {
                 emptyState
             }
         }
+    }
+
+    private var analyzingState: some View {
+        VStack(spacing: DS.sm) {
+            ProgressView()
+            Text("Loading last sleep…")
+                .font(.system(size: 13))
+                .foregroundStyle(Color.wtLabelSec)
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, DS.xl)
     }
 
     private func lastSessionContent(_ session: SleepReport) -> some View {
@@ -55,10 +78,10 @@ struct MenuBarContentView: View {
                 .padding(.top, DS.md)
                 .padding(.bottom, 10)
 
-            // Duration + status row
+            // Duration + status
             HStack(alignment: .firstTextBaseline, spacing: DS.sm) {
                 Text(session.duration.formattedDuration)
-                    .font(.system(size: 28, weight: .light, design: .default))
+                    .font(.system(size: 28, weight: .light))
                     .monospacedDigit()
                     .foregroundStyle(Color.wtLabel)
                 Spacer()
@@ -66,13 +89,13 @@ struct MenuBarContentView: View {
             }
             .padding(.horizontal, DS.md)
 
-            Text(session.nightLabel)
+            Text(session.relativeLabel)
                 .font(.system(size: 12))
                 .foregroundStyle(Color.wtLabelSec)
                 .padding(.horizontal, DS.md)
                 .padding(.top, 2)
 
-            // Battery
+            // Battery row
             if let before = session.batteryAtSleep, let after = session.batteryAtWake {
                 HStack(spacing: DS.xs) {
                     Text("Battery")
@@ -87,16 +110,23 @@ struct MenuBarContentView: View {
                     Text("\(Int(after))%")
                         .monoNum(12, weight: .medium)
                         .foregroundStyle(Color.wtLabelSec)
-                    Text("–\(Int(before - after))%")
+                    let delta = Int(before - after)
+                    Text("–\(delta)%")
                         .monoNum(12, weight: .semibold)
                         .foregroundStyle(session.status == .normal ? Color.wtLabelSec : session.status.color)
                 }
                 .padding(.horizontal, DS.md)
                 .padding(.top, DS.sm)
+            } else if session.wasCharging {
+                Label("Plugged in during sleep", systemImage: "bolt.fill")
+                    .font(.system(size: 12))
+                    .foregroundStyle(Color.wtLabelTert)
+                    .padding(.horizontal, DS.md)
+                    .padding(.top, DS.sm)
             }
 
-            // Top finding headline
-            if let topFinding = session.findings.filter({ $0.severity > .normal }).first {
+            // Top finding (non-normal only)
+            if let topFinding = session.findings.first(where: { $0.severity > .normal }) {
                 Text(topFinding.headline)
                     .font(.system(size: 12))
                     .foregroundStyle(Color.wtLabelSec)
@@ -129,19 +159,19 @@ struct MenuBarContentView: View {
     private var emptyState: some View {
         VStack(spacing: DS.sm) {
             Image(systemName: "moon.zzz")
-                .font(.system(size: 24))
+                .font(.system(size: 22))
                 .foregroundStyle(Color.wtLabelTert)
-            Text("No sleep reports yet")
+            Text("No sleep data yet")
                 .font(.system(size: 13, weight: .medium))
                 .foregroundStyle(Color.wtLabel)
-            Text("Close your Mac and WakeTrace will\nanalyse the next sleep session.")
+            Text("WakeTrace will analyse your Mac's next sleep session automatically.")
                 .font(.system(size: 12))
                 .foregroundStyle(Color.wtLabelSec)
                 .multilineTextAlignment(.center)
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, DS.xl)
-        .padding(.horizontal, DS.md)
+        .padding(.horizontal, DS.lg)
     }
 
     // MARK: - Current Status
@@ -160,22 +190,49 @@ struct MenuBarContentView: View {
                     .font(.system(size: 12, weight: .medium))
                     .foregroundStyle(Color.wtLabel)
                 Spacer()
-                HStack(spacing: 3) {
-                    Image(systemName: appState.isCharging ? "bolt.fill" : "battery.75percent")
+                HStack(spacing: 4) {
+                    Image(systemName: batteryIcon)
                         .font(.system(size: 11))
-                        .foregroundStyle(Color.wtLabelSec)
+                        .foregroundStyle(appState.isCharging ? Color.green : Color.wtLabelSec)
                     Text("\(Int(appState.currentBatteryLevel))%")
                         .monoNum(12)
                         .foregroundStyle(Color.wtLabelSec)
                 }
             }
 
-            Text("No application is preventing sleep.")
-                .font(.system(size: 11))
-                .foregroundStyle(Color.wtLabelTert)
+            // Sleep assertions
+            if appState.activeAssertions.isEmpty {
+                Text("No application is preventing sleep.")
+                    .font(.system(size: 11))
+                    .foregroundStyle(Color.wtLabelTert)
+            } else {
+                let names = appState.activeAssertions.prefix(2).joined(separator: ", ")
+                let suffix = appState.activeAssertions.count > 2 ? " +\(appState.activeAssertions.count - 2) more" : ""
+                HStack(spacing: 4) {
+                    Image(systemName: "nosign")
+                        .font(.system(size: 10))
+                        .foregroundStyle(Color.statusNotice)
+                    Text("\(names)\(suffix) is preventing sleep.")
+                        .font(.system(size: 11))
+                        .foregroundStyle(Color.statusNotice)
+                        .lineLimit(2)
+                }
+            }
         }
         .padding(.horizontal, DS.md)
         .padding(.vertical, 12)
+    }
+
+    // Real battery icon based on current level
+    private var batteryIcon: String {
+        if appState.isCharging { return "battery.100percent.bolt" }
+        switch appState.currentBatteryLevel {
+        case 76...:  return "battery.100percent"
+        case 51...:  return "battery.75percent"
+        case 26...:  return "battery.50percent"
+        case 11...:  return "battery.25percent"
+        default:     return "battery.0percent"
+        }
     }
 
     // MARK: - Footer
@@ -213,7 +270,8 @@ struct MenuBarContentView: View {
     }
 }
 
-// Simple hover effect helper
+// MARK: - Hover effect
+
 struct HoverEffectModifier: ViewModifier {
     @State private var isHovered = false
 
@@ -231,9 +289,4 @@ extension View {
     func hoverEffect() -> some View {
         modifier(HoverEffectModifier())
     }
-}
-
-#Preview {
-    MenuBarContentView()
-        .environmentObject(AppState())
 }
